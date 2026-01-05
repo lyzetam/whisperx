@@ -16,14 +16,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Install PyTorch with CUDA support first (smaller than full torch)
+# Install PyTorch 2.1.x with CUDA support (compatible with pyannote)
 RUN pip install --no-cache-dir \
-    torch==2.1.2+cu121 torchaudio==2.1.2+cu121 \
+    torch==2.1.2 torchaudio==2.1.2 \
     --index-url https://download.pytorch.org/whl/cu121
 
-# Install WhisperX and dependencies
+# Install WhisperX and dependencies (pin versions for compatibility)
 RUN pip install --no-cache-dir \
-    whisperx faster-whisper pyannote.audio \
+    faster-whisper==1.0.3 \
+    pyannote.audio==3.1.1 \
+    whisperx \
     transformers nltk fastapi uvicorn python-multipart \
     && python3 -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')" \
     && rm -rf ~/.cache/pip

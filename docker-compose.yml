@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  # GPU version - requires NVIDIA Container Toolkit
+  whisperx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: whisperx:latest
+    container_name: whisperx
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+      - whisperx-models:/app/models
+    environment:
+      - WHISPER_MODEL=${WHISPER_MODEL:-large-v3}
+      - COMPUTE_TYPE=${COMPUTE_TYPE:-float16}
+      - BATCH_SIZE=${BATCH_SIZE:-16}
+      - DEVICE=cuda
+      - HF_TOKEN=${HF_TOKEN:-}
+      - PRELOAD_MODEL=true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: api
+    restart: unless-stopped
+
+  # CPU version - works on any system
+  whisperx-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    image: whisperx:cpu
+    container_name: whisperx-cpu
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+      - whisperx-models:/app/models
+    environment:
+      - WHISPER_MODEL=${WHISPER_MODEL:-base}
+      - COMPUTE_TYPE=int8
+      - BATCH_SIZE=${BATCH_SIZE:-8}
+      - DEVICE=cpu
+      - HF_TOKEN=${HF_TOKEN:-}
+      - PRELOAD_MODEL=true
+    command: api
+    restart: unless-stopped
+    profiles:
+      - cpu
+
+volumes:
+  whisperx-models:
+    name: whisperx-models

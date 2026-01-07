@@ -14,6 +14,15 @@ from typing import Optional
 from contextlib import asynccontextmanager
 
 import torch
+
+# PyTorch 2.6+ compatibility fix for pyannote VAD models
+# These models use OmegaConf which isn't in torch's default safe globals
+try:
+    from omegaconf import DictConfig, ListConfig
+    torch.serialization.add_safe_globals([DictConfig, ListConfig])
+except ImportError:
+    pass  # OmegaConf not installed, skip
+
 import whisperx
 from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, Form
 from fastapi.responses import JSONResponse

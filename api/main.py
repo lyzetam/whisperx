@@ -16,12 +16,14 @@ from contextlib import asynccontextmanager
 import torch
 
 # PyTorch 2.6+ compatibility fix for pyannote VAD models
-# These models use OmegaConf which isn't in torch's default safe globals
-try:
-    from omegaconf import DictConfig, ListConfig
-    torch.serialization.add_safe_globals([DictConfig, ListConfig])
-except ImportError:
-    pass  # OmegaConf not installed, skip
+# PyTorch 2.6 changed weights_only default to True, breaking pyannote checkpoint loading.
+# Monkey-patch torch.load to use weights_only=False for model loading compatibility.
+_original_torch_load = torch.load
+def _patched_torch_load(*args, **kwargs):
+    if 'weights_only' not in kwargs:
+        kwargs['weights_only'] = False
+    return _original_torch_load(*args, **kwargs)
+torch.load = _patched_torch_load
 
 import whisperx
 from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, Form

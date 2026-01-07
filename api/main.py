@@ -17,11 +17,11 @@ import torch
 
 # PyTorch 2.6+ compatibility fix for pyannote VAD models
 # PyTorch 2.6 changed weights_only default to True, breaking pyannote checkpoint loading.
-# Monkey-patch torch.load to use weights_only=False for model loading compatibility.
+# Monkey-patch torch.load to always use weights_only=False for model compatibility.
+# Note: lightning_fabric explicitly passes weights_only=True, so we must override it.
 _original_torch_load = torch.load
 def _patched_torch_load(*args, **kwargs):
-    if 'weights_only' not in kwargs:
-        kwargs['weights_only'] = False
+    kwargs['weights_only'] = False  # Force False regardless of caller's setting
     return _original_torch_load(*args, **kwargs)
 torch.load = _patched_torch_load
 

@@ -1,7 +1,8 @@
 # WhisperX Docker Image
 # Fast automatic speech recognition with word-level timestamps and speaker diarization
 
-FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+# Use CUDA 12.4 with cuDNN 9 for PyTorch 2.8+ compatibility
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
@@ -16,10 +17,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Install PyTorch with CUDA 12.8 support
+# Install PyTorch with CUDA 12.4 support (matches base image)
 RUN pip install --no-cache-dir \
     torch torchaudio \
-    --index-url https://download.pytorch.org/whl/cu128
+    --index-url https://download.pytorch.org/whl/cu124
 
 # Install WhisperX and dependencies (let pip resolve compatible versions)
 RUN pip install --no-cache-dir \

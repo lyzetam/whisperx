@@ -37,12 +37,13 @@ COPY entrypoint.sh /app/
 COPY api/ /app/api/
 RUN chmod +x /app/entrypoint.sh
 
-# Environment
+# Environment - include cuDNN library paths for ctranslate2/faster-whisper
 ENV WHISPER_MODEL=large-v3 \
     COMPUTE_TYPE=float16 \
     BATCH_SIZE=16 \
     DEVICE=cuda \
-    HF_HOME=/app/models
+    HF_HOME=/app/models \
+    LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib:${LD_LIBRARY_PATH}
 
 EXPOSE 8000
 
